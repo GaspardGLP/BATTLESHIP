@@ -1,59 +1,62 @@
 package TEST;
 
 public class Board {
-    private final int SIZE = 10;
+    private final int SIZE = 7; // Adjust size for A-G, 1-7
     private char[][] grid;
 
     public Board() {
         grid = new char[SIZE][SIZE];
-        // Initialize the grid with '~' (empty water)
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
-                grid[i][j] = '~';
+                grid[i][j] = '~'; // ~ represents water
             }
         }
     }
 
-    // Place a ship on the board
-    public boolean placeShip(Ship ship, int x, int y, boolean isVertical) {
-        if (isVertical) {
-            // Check if the ship fits vertically
-            if (x + ship.getLength() > SIZE) return false;
-            for (int i = 0; i < ship.getLength(); i++) {
-                if (grid[x + i][y] != '~') return false; // Ensure no overlapping
+    // Convert letter to column index
+    public int letterToIndex(char letter) {
+        return Character.toUpperCase(letter) - 'A';
+    }
+
+    public boolean placeShip(Ship ship, int startX, int startY, int endX, int endY) {
+        // Ensure ship is in a straight line and correct length
+        if (startX == endX) { // Horizontal placement
+            int length = Math.abs(endY - startY) + 1;
+            if (length != ship.getLength()) return false;
+            for (int y = Math.min(startY, endY); y <= Math.max(startY, endY); y++) {
+                if (grid[startX][y] != '~') return false;
             }
-            // Place the ship
-            for (int i = 0; i < ship.getLength(); i++) {
-                grid[x + i][y] = 'S';
-                ship.addPosition(x + i, y);
+            for (int y = Math.min(startY, endY); y <= Math.max(startY, endY); y++) {
+                grid[startX][y] = 'S';
+                ship.addPosition(startX, y);
+            }
+        } else if (startY == endY) { // Vertical placement
+            int length = Math.abs(endX - startX) + 1;
+            if (length != ship.getLength()) return false;
+            for (int x = Math.min(startX, endX); x <= Math.max(startX, endX); x++) {
+                if (grid[x][startY] != '~') return false;
+            }
+            for (int x = Math.min(startX, endX); x <= Math.max(startX, endX); x++) {
+                grid[x][startY] = 'S';
+                ship.addPosition(x, startY);
             }
         } else {
-            // Check if the ship fits horizontally
-            if (y + ship.getLength() > SIZE) return false;
-            for (int i = 0; i < ship.getLength(); i++) {
-                if (grid[x][y + i] != '~') return false; // Ensure no overlapping
-            }
-            // Place the ship
-            for (int i = 0; i < ship.getLength(); i++) {
-                grid[x][y + i] = 'S';
-                ship.addPosition(x, y + i);
-            }
+            return false; // Not a valid placement
         }
         return true;
     }
 
-    // Handle an attack on the board
     public String receiveAttack(int x, int y) {
         if (grid[x][y] == 'S') {
-            grid[x][y] = 'X'; // Mark as hit
+            grid[x][y] = 'X'; // X for hit
             return "Hit!";
-        } else {
-            grid[x][y] = 'O'; // Mark as miss
+        } else if (grid[x][y] == '~') {
+            grid[x][y] = 'O'; // O for miss
             return "Miss!";
         }
+        return "Already attacked here!";
     }
 
-    // Check if all ships on the board are sunk
     public boolean allShipsSunk() {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -63,12 +66,18 @@ public class Board {
         return true;
     }
 
-    // Display the board, optionally hiding enemy ships
     public void displayBoard(boolean hideShips) {
+        System.out.print("  ");
+        for (char c = 'A'; c < 'A' + SIZE; c++) {
+            System.out.print(c + " ");
+        }
+        System.out.println();
+
         for (int i = 0; i < SIZE; i++) {
+            System.out.print((i + 1) + " ");
             for (int j = 0; j < SIZE; j++) {
                 if (hideShips && grid[i][j] == 'S') {
-                    System.out.print("x "); // Mask ships with 'x'
+                    System.out.print("~ "); // Hide ships
                 } else {
                     System.out.print(grid[i][j] + " ");
                 }
