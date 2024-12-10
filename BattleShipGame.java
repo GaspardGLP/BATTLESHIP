@@ -2,11 +2,9 @@ package TEST;
 
 public class BattleShipGame {
     public static void main(String[] args) {
-        // Create two players
         Player player1 = new Player("Player 1");
         Player player2 = new Player("Player 2");
 
-        // Players place all their ships
         System.out.println("=== " + player1.getName() + " places ships ===");
         player1.placeSingleShip();
 
